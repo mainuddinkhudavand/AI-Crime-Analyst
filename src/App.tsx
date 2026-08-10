@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MOCK_CRIME_CASES } from './data/mockCases';
 import { CrimeCase, EvidenceItem } from './types';
+import { vaultStorage } from './utils/vaultStorage';
 import { Header } from './components/Header';
 import { StatsBar } from './components/StatsBar';
 import { EvidenceVault } from './components/EvidenceVault/EvidenceVault';
@@ -9,46 +10,55 @@ import { EntityGraph } from './components/GraphVisualizer/EntityGraph';
 import { AIPatternStudio } from './components/AIIntelligence/AIPatternStudio';
 import { PoliceReportView } from './components/PoliceReport/PoliceReportView';
 import { IngestModal } from './components/EvidenceVault/IngestModal';
+import { ChainOfCustodyModal } from './components/EvidenceVault/ChainOfCustodyModal';
 
 export function App() {
-  const [cases, setCases] = useState<CrimeCase[]>(MOCK_CRIME_CASES);
-  const [selectedCaseId, setSelectedCaseId] = useState<string>(MOCK_CRIME_CASES[0].id);
+  const [cases, setCases] = useState<CrimeCase[]>(() => vaultStorage.loadCases());
+  const [selectedCaseId, setSelectedCaseId] = useState<string>(() => vaultStorage.loadCases()[0]?.id || MOCK_CRIME_CASES[0].id);
   const [activeTab, setActiveTab] = useState<'vault' | 'timeline' | 'graph' | 'ai' | 'report'>('vault');
   const [piiRedacted, setPiiRedacted] = useState<boolean>(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
 
   const currentCase = cases.find(c => c.id === selectedCaseId) || cases[0];
 
-  const handleAddEvidence = (newItem: EvidenceItem) => {
+  // Sync to localStorage on cases update
+  useEffect(() => {
+    vaultStorage.saveCases(cases);
+  }, [cases]);
+
+  const handleAddEvidenceItems = (newItems: EvidenceItem[]) => {
     setCases(prevCases =>
       prevCases.map(c => {
         if (c.id === selectedCaseId) {
-          const updatedItems = [newItem, ...c.evidenceItems];
+          const updatedItems = [...newItems, ...c.evidenceItems];
 
-          // Auto update nodes if new phone / crypto / bank accounts present
+          // Auto update graph nodes if new entities exist
           const newNodes = [...c.graphNodes];
-          newItem.entities.cryptoWallets.forEach((w, i) => {
-            if (!newNodes.some(n => n.label.includes(w.slice(0, 8)))) {
-              newNodes.push({
-                id: `n-crypto-${Date.now()}-${i}`,
-                label: `Wallet ${w.slice(0, 8)}...`,
-                type: 'crypto',
-                subtitle: w,
-                riskLevel: 'critical',
-              });
-            }
-          });
+          newItems.forEach(item => {
+            item.entities.cryptoWallets.forEach((w, i) => {
+              if (!newNodes.some(n => n.label.includes(w.slice(0, 8)))) {
+                newNodes.push({
+                  id: `n-crypto-${Date.now()}-${i}`,
+                  label: `Wallet ${w.slice(0, 8)}...`,
+                  type: 'crypto',
+                  subtitle: w,
+                  riskLevel: 'critical',
+                });
+              }
+            });
 
-          newItem.entities.phones.forEach((p, i) => {
-            if (!newNodes.some(n => n.label.includes(p))) {
-              newNodes.push({
-                id: `n-phone-${Date.now()}-${i}`,
-                label: p,
-                type: 'phone',
-                subtitle: 'Suspect Phone Line',
-                riskLevel: 'high',
-              });
-            }
+            item.entities.phones.forEach((p, i) => {
+              if (!newNodes.some(n => n.label.includes(p))) {
+                newNodes.push({
+                  id: `n-phone-${Date.now()}-${i}`,
+                  label: p,
+                  type: 'phone',
+                  subtitle: 'Suspect Phone Line',
+                  riskLevel: 'high',
+                });
+              }
+            });
           });
 
           return {
@@ -60,6 +70,37 @@ export function App() {
         return c;
       })
     );
+  };
+
+  const handleDeleteExhibit = (exhibitId: string) => {
+    setCases(prevCases =>
+      prevCases.map(c => {
+        if (c.id === selectedCaseId) {
+          return {
+            ...c,
+            evidenceItems: c.evidenceItems.filter(item => item.id !== exhibitId),
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const handleExportVaultJSON = () => {
+    vaultStorage.exportVaultJSON(cases);
+  };
+
+  const handleImportVaultJSON = (jsonString: string) => {
+    const imported = vaultStorage.importVaultJSON(jsonString);
+    if (imported) {
+      setCases(imported);
+      if (imported[0]?.id) {
+        setSelectedCaseId(imported[0].id);
+      }
+      alert('Forensic Evidence Vault Backup imported successfully!');
+    } else {
+      alert('Failed to import backup JSON: Invalid vault file format.');
+    }
   };
 
   return (
@@ -74,6 +115,9 @@ export function App() {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
+        onOpenAuditModal={() => setIsAuditModalOpen(true)}
+        onExportVaultJSON={handleExportVaultJSON}
+        onImportVaultJSON={handleImportVaultJSON}
       />
 
       {/* Case Telemetry Bar */}
@@ -86,6 +130,8 @@ export function App() {
             currentCase={currentCase}
             piiRedacted={piiRedacted}
             onOpenIngestModal={() => setIsUploadModalOpen(true)}
+            onIngestFiles={handleAddEvidenceItems}
+            onDeleteExhibit={handleDeleteExhibit}
           />
         )}
 
@@ -119,7 +165,14 @@ export function App() {
         onClose={() => setIsUploadModalOpen(false)}
         existingCount={currentCase.evidenceItems.length}
         caseId={currentCase.id}
-        onAddEvidence={handleAddEvidence}
+        onAddEvidence={item => handleAddEvidenceItems([item])}
+      />
+
+      {/* Chain of Custody Audit Modal */}
+      <ChainOfCustodyModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        evidenceItems={currentCase.evidenceItems}
       />
     </div>
   );

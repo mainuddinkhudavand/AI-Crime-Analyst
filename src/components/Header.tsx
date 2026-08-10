@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   ShieldAlert,
   FileCheck,
@@ -11,6 +11,9 @@ import {
   Download,
   FolderOpen,
   Sparkles,
+  ShieldCheck,
+  HardDriveDownload,
+  HardDriveUpload,
 } from 'lucide-react';
 import { CrimeCase } from '../types';
 
@@ -23,6 +26,9 @@ interface HeaderProps {
   activeTab: 'vault' | 'timeline' | 'graph' | 'ai' | 'report';
   onSelectTab: (tab: 'vault' | 'timeline' | 'graph' | 'ai' | 'report') => void;
   onOpenUploadModal: () => void;
+  onOpenAuditModal: () => void;
+  onExportVaultJSON: () => void;
+  onImportVaultJSON: (jsonString: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -34,11 +40,38 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onSelectTab,
   onOpenUploadModal,
+  onOpenAuditModal,
+  onExportVaultJSON,
+  onImportVaultJSON,
 }) => {
   const currentCase = cases.find(c => c.id === selectedCaseId) || cases[0];
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        if (content) {
+          onImportVaultJSON(content);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-[#0B0F19]/95 backdrop-blur-md border-b border-cyan-900/40 shadow-2xl">
+      {/* Hidden file input for vault import */}
+      <input
+        ref={importInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleFileImport}
+        className="hidden"
+      />
+
       {/* Top Telemetry Bar */}
       <div className="bg-[#060911] border-b border-slate-800/80 px-4 py-1.5 flex items-center justify-between text-xs font-mono text-slate-400">
         <div className="flex items-center space-x-4">
@@ -47,12 +80,14 @@ export const Header: React.FC<HeaderProps> = ({
             <span>AI DIGITAL CRIME SCENE INVESTIGATOR v2.6</span>
           </span>
           <span className="hidden sm:inline-block text-slate-600">|</span>
-          <span className="hidden sm:flex items-center space-x-1 text-emerald-400">
-            <Lock className="w-3 h-3" />
-            <span>LOCAL ENCRYPTED VAULT (AES-256)</span>
-          </span>
-          <span className="hidden md:inline-block text-slate-600">|</span>
-          <span className="hidden md:inline text-slate-400">CHAIN OF CUSTODY: <strong className="text-emerald-400">SHA-256 VERIFIED</strong></span>
+          <button
+            onClick={onOpenAuditModal}
+            className="hidden sm:flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 cursor-pointer"
+            title="Open Chain of Custody SHA-256 Audit Log"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>CHAIN OF CUSTODY: <strong className="underline">SHA-256 VERIFIED</strong></span>
+          </button>
         </div>
         <div className="flex items-center space-x-3 text-slate-400">
           <span className="flex items-center space-x-1 bg-cyan-950/60 border border-cyan-800/50 px-2 py-0.5 rounded text-[11px] text-cyan-300">
@@ -107,7 +142,26 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Global Controls & Actions */}
-        <div className="flex items-center space-x-2.5 w-full md:w-auto justify-end">
+        <div className="flex items-center space-x-2 w-full md:w-auto justify-end">
+          {/* Backup Export / Import */}
+          <button
+            onClick={onExportVaultJSON}
+            className="flex items-center space-x-1 bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700"
+            title="Export Evidence Vault Backup (JSON)"
+          >
+            <HardDriveDownload className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">EXPORT BACKUP</span>
+          </button>
+
+          <button
+            onClick={() => importInputRef.current?.click()}
+            className="flex items-center space-x-1 bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700"
+            title="Import Evidence Vault Backup (JSON)"
+          >
+            <HardDriveUpload className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">IMPORT BACKUP</span>
+          </button>
+
           {/* PII Redaction Toggle */}
           <button
             onClick={onTogglePii}
@@ -121,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
             {piiRedacted ? (
               <>
                 <EyeOff className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                <span>PII REDACTED (ON)</span>
+                <span>PII REDACTED</span>
               </>
             ) : (
               <>

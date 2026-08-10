@@ -17,21 +17,27 @@ import {
   Scan,
   ShieldCheck,
   Tag,
+  Trash2,
 } from 'lucide-react';
 import { EvidenceItem, EvidenceType, CrimeCase } from '../../types';
 import { redactSensitivePII } from '../../utils/entityExtractor';
 import { formatHash } from '../../utils/cryptoUtils';
+import { FileDropzone } from './FileDropzone';
 
 interface EvidenceVaultProps {
   currentCase: CrimeCase;
   piiRedacted: boolean;
   onOpenIngestModal: () => void;
+  onIngestFiles: (items: EvidenceItem[]) => void;
+  onDeleteExhibit: (exhibitId: string) => void;
 }
 
 export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
   currentCase,
   piiRedacted,
   onOpenIngestModal,
+  onIngestFiles,
+  onDeleteExhibit,
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -62,6 +68,13 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 font-mono space-y-6">
+      {/* Day 2 Drag and Drop Multi-File Ingestion Zone */}
+      <FileDropzone
+        onIngestFiles={onIngestFiles}
+        existingCount={currentCase.evidenceItems.length}
+        caseId={currentCase.id}
+      />
+
       {/* Top Toolbar & Filter bar */}
       <div className="bg-[#0F172A]/90 border border-cyan-900/50 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center space-x-2 overflow-x-auto w-full md:w-auto no-scrollbar">
@@ -150,7 +163,7 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
             className="flex items-center space-x-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-md shadow-cyan-500/20 whitespace-nowrap transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>ADD EVIDENCE</span>
+            <span>ADD TEXT EVIDENCE</span>
           </button>
         </div>
       </div>
@@ -174,11 +187,23 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
                   <span className="capitalize">{item.type}</span>
                 </span>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" title="Cryptographically Validated SHA-256" />
                 <span className="text-[10px] text-slate-400 font-mono" title={item.sha256Hash}>
                   {formatHash(item.sha256Hash)}
                 </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm(`Remove exhibit ${item.exhibitNumber}?`)) {
+                      onDeleteExhibit(item.id);
+                    }
+                  }}
+                  className="text-slate-500 hover:text-red-400 p-1 rounded hover:bg-slate-800 transition-all ml-1"
+                  title="Remove Exhibit"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
 
