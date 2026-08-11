@@ -18,11 +18,15 @@ import {
   ShieldCheck,
   Tag,
   Trash2,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { EvidenceItem, EvidenceType, CrimeCase } from '../../types';
 import { redactSensitivePII } from '../../utils/entityExtractor';
-import { formatHash } from '../../utils/cryptoUtils';
+import { formatHash, calculateSHA256, generateExhibitNumber } from '../../utils/cryptoUtils';
 import { FileDropzone } from './FileDropzone';
+import { ChatParserStudio, ParsedChatMessage } from '../Parsers/ChatParserStudio';
+import { EmailHeaderAnalyzer, ParsedEmailAudit } from '../Parsers/EmailHeaderAnalyzer';
+import { FinancialLedgerParser, ParsedFinancialTx } from '../Parsers/FinancialLedgerParser';
 
 interface EvidenceVaultProps {
   currentCase: CrimeCase;
@@ -43,6 +47,7 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedExhibit, setSelectedExhibit] = useState<EvidenceItem | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [activeParserStudio, setActiveParserStudio] = useState<'none' | 'chat' | 'email' | 'financial'>('none');
 
   const filteredItems = currentCase.evidenceItems.filter(item => {
     const matchesType = filterType === 'all' || item.type === filterType;
@@ -66,6 +71,106 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
     }
   };
 
+  const handleAddParsedChatExhibit = async (title: string, rawContent: string, messages: ParsedChatMessage[]) => {
+    const hash = await calculateSHA256(rawContent);
+    const exhibitNumber = generateExhibitNumber(currentCase.evidenceItems.length);
+    const item: EvidenceItem = {
+      id: `ev-chat-${Date.now()}`,
+      exhibitNumber,
+      caseId: currentCase.id,
+      title,
+      type: 'chat',
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+      sha256Hash: hash,
+      sourceName: 'Chat Log Parser Studio',
+      rawContent,
+      entities: {
+        phones: [],
+        emails: [],
+        bankAccounts: [],
+        cryptoWallets: [],
+        ipAddresses: [],
+        amounts: [],
+        handles: messages.map(m => m.sender).filter(s => !s.includes('Victim')),
+        urls: [],
+      },
+      riskScore: 92,
+      flaggedKeywords: ['Coercion', 'Demands'],
+    };
+    onIngestFiles([item]);
+    setActiveParserStudio('none');
+  };
+
+  const handleAddEmailExhibit = async (title: string, rawMime: string, audit: ParsedEmailAudit) => {
+    const hash = await calculateSHA256(rawMime);
+    const exhibitNumber = generateExhibitNumber(currentCase.evidenceItems.length);
+    const item: EvidenceItem = {
+      id: `ev-email-${Date.now()}`,
+      exhibitNumber,
+      caseId: currentCase.id,
+      title,
+      type: 'email',
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+      sha256Hash: hash,
+      sourceName: 'Email Header Analyzer',
+      rawContent: rawMime,
+      entities: {
+        phones: [],
+        emails: [audit.from, audit.to],
+        bankAccounts: [],
+        cryptoWallets: [],
+        ipAddresses: [audit.originatingIp],
+        amounts: [],
+        handles: [],
+        urls: audit.phishingUrls,
+      },
+      riskScore: audit.isSpoofed ? 98 : 75,
+      flaggedKeywords: ['SPF_FAIL', 'DKIM_FAIL', 'SPOOFED_ORIGIN'],
+      metadata: {
+        emailHeaders: {
+          from: audit.from,
+          to: audit.to,
+          subject: audit.subject,
+          spfStatus: audit.spfStatus,
+          dkimStatus: audit.dkimStatus,
+          originatingIp: audit.originatingIp,
+        },
+      },
+    };
+    onIngestFiles([item]);
+    setActiveParserStudio('none');
+  };
+
+  const handleAddFinancialExhibit = async (title: string, rawContent: string, transactions: ParsedFinancialTx[], totalUSD: number) => {
+    const hash = await calculateSHA256(rawContent);
+    const exhibitNumber = generateExhibitNumber(currentCase.evidenceItems.length);
+    const item: EvidenceItem = {
+      id: `ev-fin-${Date.now()}`,
+      exhibitNumber,
+      caseId: currentCase.id,
+      title,
+      type: 'transaction',
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+      sha256Hash: hash,
+      sourceName: 'Financial Ledger Parser',
+      rawContent,
+      entities: {
+        phones: [],
+        emails: [],
+        bankAccounts: transactions.map(t => t.receiver).filter(r => !r.startsWith('0x')),
+        cryptoWallets: transactions.map(t => t.receiver).filter(r => r.startsWith('0x')),
+        ipAddresses: [],
+        amounts: [`$${totalUSD.toLocaleString()} USD`],
+        handles: [],
+        urls: [],
+      },
+      riskScore: 96,
+      flaggedKeywords: ['Financial Loss', 'Wire Drain'],
+    };
+    onIngestFiles([item]);
+    setActiveParserStudio('none');
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 font-mono space-y-6">
       {/* Day 2 Drag and Drop Multi-File Ingestion Zone */}
@@ -74,6 +179,62 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
         existingCount={currentCase.evidenceItems.length}
         caseId={currentCase.id}
       />
+
+      {/* Day 3 Parser Studio Selector Bar */}
+      <div className="bg-[#0D121F] border border-cyan-950 p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+        <span className="text-cyan-400 font-bold flex items-center gap-1.5">
+          <SlidersHorizontal className="w-4 h-4" />
+          <span>DAY 3 MULTI-SOURCE EVIDENCE PARSER STUDIOS:</span>
+        </span>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setActiveParserStudio(activeParserStudio === 'chat' ? 'none' : 'chat')}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
+              activeParserStudio === 'chat'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50'
+                : 'bg-slate-800 text-slate-300 hover:border-slate-700'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Chat Log Studio</span>
+          </button>
+
+          <button
+            onClick={() => setActiveParserStudio(activeParserStudio === 'email' ? 'none' : 'email')}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
+              activeParserStudio === 'email'
+                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
+                : 'bg-slate-800 text-slate-300 hover:border-slate-700'
+            }`}
+          >
+            <Mail className="w-3.5 h-3.5 text-blue-400" />
+            <span>Email Header Studio</span>
+          </button>
+
+          <button
+            onClick={() => setActiveParserStudio(activeParserStudio === 'financial' ? 'none' : 'financial')}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
+              activeParserStudio === 'financial'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50'
+                : 'bg-slate-800 text-slate-300 hover:border-slate-700'
+            }`}
+          >
+            <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+            <span>Financial Ledger Studio</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Active Parser Component */}
+      {activeParserStudio === 'chat' && (
+        <ChatParserStudio onAddParsedChatExhibit={handleAddParsedChatExhibit} />
+      )}
+      {activeParserStudio === 'email' && (
+        <EmailHeaderAnalyzer onAddEmailExhibit={handleAddEmailExhibit} />
+      )}
+      {activeParserStudio === 'financial' && (
+        <FinancialLedgerParser onAddFinancialExhibit={handleAddFinancialExhibit} />
+      )}
 
       {/* Top Toolbar & Filter bar */}
       <div className="bg-[#0F172A]/90 border border-cyan-900/50 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
