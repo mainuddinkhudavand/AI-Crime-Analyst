@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_CRIME_CASES } from './data/mockCases';
 import { CrimeCase, EvidenceItem } from './types';
 import { vaultStorage } from './utils/vaultStorage';
@@ -98,14 +99,12 @@ export function App() {
         setSelectedCaseId(imported[0].id);
       }
       alert('Forensic Evidence Vault Backup imported successfully!');
-    } else {
-      alert('Failed to import backup JSON: Invalid vault file format.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#070A12] text-slate-100 font-sans selection:bg-cyan-900 selection:text-cyan-200">
-      {/* Header */}
+    <div className="min-h-screen bg-[#070A11] text-slate-100 selection:bg-cyan-500 selection:text-black font-mono">
+      {/* Top Header */}
       <Header
         cases={cases}
         selectedCaseId={selectedCaseId}
@@ -123,40 +122,50 @@ export function App() {
       {/* Case Telemetry Bar */}
       <StatsBar currentCase={currentCase} />
 
-      {/* Tab Views */}
+      {/* Tab Views with Framer Motion Animation */}
       <main className="pb-12">
-        {activeTab === 'vault' && (
-          <EvidenceVault
-            currentCase={currentCase}
-            piiRedacted={piiRedacted}
-            onOpenIngestModal={() => setIsUploadModalOpen(true)}
-            onIngestFiles={handleAddEvidenceItems}
-            onDeleteExhibit={handleDeleteExhibit}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab + selectedCaseId}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === 'vault' && (
+              <EvidenceVault
+                currentCase={currentCase}
+                piiRedacted={piiRedacted}
+                onOpenIngestModal={() => setIsUploadModalOpen(true)}
+                onIngestFiles={handleAddEvidenceItems}
+                onDeleteExhibit={handleDeleteExhibit}
+              />
+            )}
 
-        {activeTab === 'timeline' && (
-          <MasterTimeline
-            currentCase={currentCase}
-            piiRedacted={piiRedacted}
-          />
-        )}
+            {activeTab === 'timeline' && (
+              <MasterTimeline
+                currentCase={currentCase}
+                piiRedacted={piiRedacted}
+              />
+            )}
 
-        {activeTab === 'graph' && (
-          <EntityGraph currentCase={currentCase} />
-        )}
+            {activeTab === 'graph' && (
+              <EntityGraph currentCase={currentCase} />
+            )}
 
-        {activeTab === 'ai' && (
-          <AIPatternStudio currentCase={currentCase} />
-        )}
+            {activeTab === 'ai' && (
+              <AIPatternStudio currentCase={currentCase} allCases={cases} />
+            )}
 
-        {activeTab === 'report' && (
-          <PoliceReportView
-            currentCase={currentCase}
-            piiRedacted={piiRedacted}
-            onBackToVault={() => setActiveTab('vault')}
-          />
-        )}
+            {activeTab === 'report' && (
+              <PoliceReportView
+                currentCase={currentCase}
+                piiRedacted={piiRedacted}
+                onBackToVault={() => setActiveTab('vault')}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Evidence Ingestion Modal */}
