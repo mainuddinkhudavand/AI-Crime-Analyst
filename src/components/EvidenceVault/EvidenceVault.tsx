@@ -27,6 +27,8 @@ import { FileDropzone } from './FileDropzone';
 import { ChatParserStudio, ParsedChatMessage } from '../Parsers/ChatParserStudio';
 import { EmailHeaderAnalyzer, ParsedEmailAudit } from '../Parsers/EmailHeaderAnalyzer';
 import { FinancialLedgerParser, ParsedFinancialTx } from '../Parsers/FinancialLedgerParser';
+import { AudioTranscriberStudio } from '../Parsers/AudioTranscriberStudio';
+import { ScreenshotOCRStudio } from '../Parsers/ScreenshotOCRStudio';
 
 interface EvidenceVaultProps {
   currentCase: CrimeCase;
@@ -47,7 +49,7 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedExhibit, setSelectedExhibit] = useState<EvidenceItem | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [activeParserStudio, setActiveParserStudio] = useState<'none' | 'chat' | 'email' | 'financial'>('none');
+  const [activeParserStudio, setActiveParserStudio] = useState<'none' | 'chat' | 'email' | 'financial' | 'audio' | 'ocr'>('none');
 
   const filteredItems = currentCase.evidenceItems.filter(item => {
     const matchesType = filterType === 'all' || item.type === filterType;
@@ -222,6 +224,30 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
             <CreditCard className="w-3.5 h-3.5 text-amber-400" />
             <span>Financial Ledger Studio</span>
           </button>
+
+          <button
+            onClick={() => setActiveParserStudio(activeParserStudio === 'audio' ? 'none' : 'audio')}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
+              activeParserStudio === 'audio'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50'
+                : 'bg-slate-800 text-slate-300 hover:border-slate-700'
+            }`}
+          >
+            <Mic className="w-3.5 h-3.5 text-rose-400" />
+            <span>Audio Transcriber</span>
+          </button>
+
+          <button
+            onClick={() => setActiveParserStudio(activeParserStudio === 'ocr' ? 'none' : 'ocr')}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
+              activeParserStudio === 'ocr'
+                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
+                : 'bg-slate-800 text-slate-300 hover:border-slate-700'
+            }`}
+          >
+            <FileImage className="w-3.5 h-3.5 text-purple-400" />
+            <span>Screenshot OCR Studio</span>
+          </button>
         </div>
       </div>
 
@@ -234,6 +260,26 @@ export const EvidenceVault: React.FC<EvidenceVaultProps> = ({
       )}
       {activeParserStudio === 'financial' && (
         <FinancialLedgerParser onAddFinancialExhibit={handleAddFinancialExhibit} />
+      )}
+      {activeParserStudio === 'audio' && (
+        <AudioTranscriberStudio
+          caseId={currentCase.id}
+          onIngest={(item) => {
+            onIngestFiles([item]);
+            setActiveParserStudio('none');
+          }}
+          onClose={() => setActiveParserStudio('none')}
+        />
+      )}
+      {activeParserStudio === 'ocr' && (
+        <ScreenshotOCRStudio
+          caseId={currentCase.id}
+          onIngest={(item) => {
+            onIngestFiles([item]);
+            setActiveParserStudio('none');
+          }}
+          onClose={() => setActiveParserStudio('none')}
+        />
       )}
 
       {/* Top Toolbar & Filter bar */}

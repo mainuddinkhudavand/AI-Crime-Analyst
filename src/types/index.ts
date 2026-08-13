@@ -11,6 +11,20 @@ export interface ExtractedEntities {
   urls: string[];
 }
 
+export interface AudioDiarizationSegment {
+  speaker: 'SUSPECT' | 'VICTIM' | 'VOICE_BOT' | 'UNKNOWN';
+  timestamp: string;
+  text: string;
+  riskScore: number;
+}
+
+export interface OCRBoundingBox {
+  id: string;
+  text: string;
+  confidence: number;
+  type: 'wallet' | 'amount' | 'phone' | 'url' | 'text';
+}
+
 export interface EvidenceItem {
   id: string;
   exhibitNumber: string;
@@ -28,7 +42,10 @@ export interface EvidenceItem {
     audioDuration?: string;
     audioUrl?: string;
     transcript?: string;
+    diarizationSegments?: AudioDiarizationSegment[];
     ocrConfidence?: number;
+    ocrBoxes?: OCRBoundingBox[];
+    imageUrl?: string;
     emailHeaders?: {
       from: string;
       to: string;
@@ -79,6 +96,18 @@ export interface AIPatternAlert {
   recommendation: string;
 }
 
+export interface CrossCaseLinkage {
+  id: string;
+  entityValue: string;
+  entityType: 'crypto' | 'phone' | 'email' | 'domain' | 'bank';
+  matchedCaseIds: string[];
+  matchedCaseTitles: string[];
+  threatLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  description: string;
+}
+
+export type SubpoenaType = 'whatsapp_preservation' | 'coinbase_freeze' | 'bank_hold' | 'isp_subscriber';
+
 export interface CrimeCase {
   id: string;
   caseNumber: string;
@@ -103,4 +132,5 @@ export interface CrimeCase {
   graphEdges: GraphEdge[];
   aiAlerts: AIPatternAlert[];
   recommendedActions: string[];
+  crossCaseMatches?: CrossCaseLinkage[];
 }
