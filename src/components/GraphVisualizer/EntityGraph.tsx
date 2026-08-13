@@ -1,5 +1,23 @@
 import React, { useState } from 'react';
-import { Network, ShieldAlert, DollarSign, Phone, Mail, CreditCard, Lock, ArrowRight, UserCheck, AlertOctagon, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Network,
+  ShieldAlert,
+  DollarSign,
+  Phone,
+  Mail,
+  CreditCard,
+  Lock,
+  ArrowRight,
+  UserCheck,
+  AlertOctagon,
+  Info,
+  Plus,
+  Zap,
+  Download,
+  CheckCircle2,
+  X,
+} from 'lucide-react';
 import { CrimeCase, GraphNode, GraphEdge } from '../../types';
 
 interface EntityGraphProps {
@@ -9,12 +27,42 @@ interface EntityGraphProps {
 export const EntityGraph: React.FC<EntityGraphProps> = ({ currentCase }) => {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [filterNodeType, setFilterNodeType] = useState<string>('all');
+  const [isTracingTrail, setIsTracingTrail] = useState<boolean>(false);
+  const [isAddNodeModalOpen, setIsAddNodeModalOpen] = useState<boolean>(false);
 
-  const nodes = currentCase.graphNodes.filter(n => {
+  // Custom nodes added during runtime
+  const [customNodes, setCustomNodes] = useState<GraphNode[]>([]);
+  const [newLabel, setNewLabel] = useState<string>('');
+  const [newSubtitle, setNewSubtitle] = useState<string>('');
+  const [newType, setNewType] = useState<GraphNode['type']>('suspect');
+  const [newRisk, setNewRisk] = useState<GraphNode['riskLevel']>('critical');
+
+  const allNodes = [...currentCase.graphNodes, ...customNodes];
+
+  const nodes = allNodes.filter(n => {
     return filterNodeType === 'all' || n.type === filterNodeType;
   });
 
-  const getNodeColor = (type: GraphNode['type']) => {
+  const handleAddCustomNode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLabel) return;
+    const node: GraphNode = {
+      id: `custom-n-${Date.now()}`,
+      label: newLabel,
+      subtitle: newSubtitle || 'Manually Logged Suspect Entity',
+      type: newType,
+      riskLevel: newRisk,
+    };
+    setCustomNodes(prev => [...prev, node]);
+    setNewLabel('');
+    setNewSubtitle('');
+    setIsAddNodeModalOpen(false);
+  };
+
+  const getNodeColor = (type: GraphNode['type'], isHighlighted: boolean) => {
+    if (isHighlighted) {
+      return 'border-amber-400 bg-amber-950 text-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.5)] scale-105 ring-2 ring-amber-400';
+    }
     switch (type) {
       case 'victim':
         return 'border-cyan-400 bg-cyan-950/90 text-cyan-200 shadow-cyan-500/20';
@@ -62,25 +110,47 @@ export const EntityGraph: React.FC<EntityGraphProps> = ({ currentCase }) => {
             <span>ENTITY RELATIONSHIP & FINANCIAL FLOW GRAPH</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Interactive network diagram mapping suspect handles, mule bank accounts, crypto wallets, and phishing domains
+            Interactive visual network topology mapping suspect handles, mule accounts, and money trails
           </p>
         </div>
 
-        {/* Node Filters */}
-        <div className="flex items-center space-x-2 text-xs">
-          <span className="text-slate-400">Filter Nodes:</span>
-          <select
-            value={filterNodeType}
-            onChange={e => setFilterNodeType(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer font-mono"
+        {/* Node Controls & Actions */}
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <button
+            onClick={() => setIsTracingTrail(!isTracingTrail)}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
+              isTracingTrail
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-lg shadow-amber-500/20'
+                : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700'
+            }`}
           >
-            <option value="all">All Entities ({currentCase.graphNodes.length})</option>
-            <option value="victim">Victims Only</option>
-            <option value="suspect">Suspect Handles</option>
-            <option value="bank">Mule Bank ACs</option>
-            <option value="crypto">Crypto Wallets</option>
-            <option value="domain">Phishing Domains</option>
-          </select>
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span>{isTracingTrail ? 'MONEY TRAIL TRACED' : 'TRACE FINANCIAL TRAIL'}</span>
+          </button>
+
+          <button
+            onClick={() => setIsAddNodeModalOpen(true)}
+            className="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-lg font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>ADD ENTITY NODE</span>
+          </button>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-slate-400">Filter:</span>
+            <select
+              value={filterNodeType}
+              onChange={e => setFilterNodeType(e.target.value)}
+              className="bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer font-mono"
+            >
+              <option value="all">All Entities ({allNodes.length})</option>
+              <option value="victim">Victims Only</option>
+              <option value="suspect">Suspect Handles</option>
+              <option value="bank">Mule Bank ACs</option>
+              <option value="crypto">Crypto Wallets</option>
+              <option value="domain">Phishing Domains</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -110,33 +180,57 @@ export const EntityGraph: React.FC<EntityGraphProps> = ({ currentCase }) => {
             </span>
           </div>
 
-          {/* Nodes Grid Layout Simulation */}
-          <div className="relative z-10 my-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {nodes.map(node => (
-              <div
-                key={node.id}
-                onClick={() => setSelectedNode(node)}
-                className={`p-4 rounded-xl border shadow-lg cursor-pointer transition-all hover:scale-105 ${getNodeColor(
-                  node.type
-                )} ${selectedNode?.id === node.id ? 'ring-2 ring-cyan-400 shadow-cyan-500/40' : ''}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="p-1.5 rounded-lg bg-black/40 border border-white/10">
-                      {getNodeIcon(node.type)}
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold font-mono tracking-tight">{node.label}</h4>
-                      {node.subtitle && <p className="text-[10px] opacity-80 font-mono mt-0.5">{node.subtitle}</p>}
-                    </div>
-                  </div>
-
-                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-black/50 border border-white/10">
-                    {node.type}
-                  </span>
-                </div>
+          {/* Traced Money Flow Banner */}
+          {isTracingTrail && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative z-10 my-2 bg-amber-950/30 border border-amber-500/50 p-3 rounded-lg text-xs text-amber-200 flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2">
+                <Zap className="w-4 h-4 text-amber-400 animate-bounce" />
+                <span><strong>TRACED MONEY TRAIL:</strong> Victim ($\$42,500\text{ USD}$) $\rightarrow$ Vanguard Phishing Portal $\rightarrow$ Mule Bank AC $\rightarrow$ ETH Mixer Vault</span>
               </div>
-            ))}
+              <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-500/40">
+                100% LAUNDERED
+              </span>
+            </motion.div>
+          )}
+
+          {/* Nodes Grid Layout Simulation */}
+          <div className="relative z-10 my-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {nodes.map(node => {
+              const isTrailHighlighted = isTracingTrail && (node.type === 'bank' || node.type === 'crypto' || node.type === 'victim');
+
+              return (
+                <motion.div
+                  key={node.id}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedNode(node)}
+                  className={`p-4 rounded-xl border shadow-lg cursor-pointer transition-all ${getNodeColor(
+                    node.type,
+                    isTrailHighlighted
+                  )} ${selectedNode?.id === node.id ? 'ring-2 ring-cyan-400 shadow-cyan-500/40' : ''}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="p-1.5 rounded-lg bg-black/40 border border-white/10">
+                        {getNodeIcon(node.type)}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold font-mono tracking-tight">{node.label}</h4>
+                        {node.subtitle && <p className="text-[10px] opacity-80 font-mono mt-0.5">{node.subtitle}</p>}
+                      </div>
+                    </div>
+
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-black/50 border border-white/10">
+                      {node.type}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Flow Edges Summary list */}
@@ -144,8 +238,8 @@ export const EntityGraph: React.FC<EntityGraphProps> = ({ currentCase }) => {
             <span className="text-cyan-400 font-bold uppercase tracking-wider text-[11px] block">LINKED EVIDENCE FLOWS & WIRE TRAIL:</span>
             <div className="space-y-1">
               {currentCase.graphEdges.map(edge => {
-                const srcNode = currentCase.graphNodes.find(n => n.id === edge.source);
-                const tgtNode = currentCase.graphNodes.find(n => n.id === edge.target);
+                const srcNode = allNodes.find(n => n.id === edge.source);
+                const tgtNode = allNodes.find(n => n.id === edge.target);
                 return (
                   <div key={edge.id} className="flex items-center justify-between text-[11px] bg-slate-900/60 p-1.5 rounded border border-slate-800/80">
                     <div className="flex items-center space-x-1.5 text-slate-200">
@@ -216,10 +310,112 @@ export const EntityGraph: React.FC<EntityGraphProps> = ({ currentCase }) => {
 
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-[11px] text-slate-400">
             <span className="text-cyan-400 font-bold block mb-1">AUTOMATED FORENSIC GRAPH ANALYSIS:</span>
-            Graph nodes are updated dynamically whenever new digital evidence exhibits are ingested into the case vault.
+            Graph nodes update dynamically whenever new digital evidence exhibits are ingested into the case vault.
           </div>
         </div>
       </div>
+
+      {/* Add Custom Node Modal */}
+      <AnimatePresence>
+        {isAddNodeModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0F172A] border border-indigo-500/50 rounded-xl max-w-md w-full p-6 font-mono space-y-4 shadow-2xl relative"
+            >
+              <button
+                onClick={() => setIsAddNodeModalOpen(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center space-x-2.5 text-white">
+                <Plus className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-base font-bold">MANUALLY LOG NEW ENTITY NODE</h3>
+              </div>
+
+              <form onSubmit={handleAddCustomNode} className="space-y-3 text-xs">
+                <div>
+                  <label className="text-slate-400 block mb-1">Entity Label / Name:</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Wallet 0x8a9... or Suspect Phone Line"
+                    value={newLabel}
+                    onChange={e => setNewLabel(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-400 block mb-1">Subtitle / Note:</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Identified Escrow Mule Account"
+                    value={newSubtitle}
+                    onChange={e => setNewSubtitle(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-slate-400 block mb-1">Entity Type:</label>
+                    <select
+                      value={newType}
+                      onChange={e => setNewType(e.target.value as GraphNode['type'])}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none"
+                    >
+                      <option value="suspect">Suspect Entity</option>
+                      <option value="crypto">Crypto Wallet</option>
+                      <option value="bank">Mule Bank AC</option>
+                      <option value="phone">Phone Line</option>
+                      <option value="domain">Phishing Domain</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 block mb-1">Risk Level:</label>
+                    <select
+                      value={newRisk}
+                      onChange={e => setNewRisk(e.target.value as GraphNode['riskLevel'])}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none"
+                    >
+                      <option value="critical">Critical</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddNodeModalOpen(false)}
+                    className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold"
+                  >
+                    Add Entity to Graph
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
