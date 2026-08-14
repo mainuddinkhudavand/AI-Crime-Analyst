@@ -1,5 +1,7 @@
 export type EvidenceType = 'chat' | 'email' | 'screenshot' | 'transaction' | 'audio';
 
+export type ActiveTabType = 'vault' | 'timeline' | 'graph' | 'ai' | 'radar' | 'tamper' | 'cases' | 'report';
+
 export interface ExtractedEntities {
   phones: string[];
   emails: string[];
@@ -108,6 +110,29 @@ export interface CrossCaseLinkage {
 
 export type SubpoenaType = 'whatsapp_preservation' | 'coinbase_freeze' | 'bank_hold' | 'isp_subscriber';
 
+export interface IPTelemetryNode {
+  ip: string;
+  country: string;
+  city: string;
+  isp: string;
+  threatType: 'TOR_EXIT_NODE' | 'VPN_PROXY' | 'MALICIOUS_C2' | 'RESIDENTIAL_ISP';
+  latitude: number;
+  longitude: number;
+  associatedExhibits: string[];
+  riskScore: number;
+}
+
+export interface CopilotMessage {
+  id: string;
+  sender: 'USER' | 'AI';
+  text: string;
+  timestamp: string;
+  actionTrigger?: {
+    type: 'NAVIGATE' | 'HIGHLIGHT_EXHIBIT' | 'GENERATE_SUBPOENA';
+    target: string;
+  };
+}
+
 export interface CrimeCase {
   id: string;
   caseNumber: string;
@@ -133,4 +158,5 @@ export interface CrimeCase {
   aiAlerts: AIPatternAlert[];
   recommendedActions: string[];
   crossCaseMatches?: CrossCaseLinkage[];
+  ipNodes?: IPTelemetryNode[];
 }
