@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_CRIME_CASES } from './data/mockCases';
-import { CrimeCase, EvidenceItem } from './types';
+import { CrimeCase, EvidenceItem, ActiveTabType } from './types';
 import { vaultStorage } from './utils/vaultStorage';
 import { Header } from './components/Header';
 import { StatsBar } from './components/StatsBar';
@@ -9,6 +9,11 @@ import { EvidenceVault } from './components/EvidenceVault/EvidenceVault';
 import { MasterTimeline } from './components/Timeline/MasterTimeline';
 import { EntityGraph } from './components/GraphVisualizer/EntityGraph';
 import { AIPatternStudio } from './components/AIIntelligence/AIPatternStudio';
+import { AICopilotDrawer } from './components/AIIntelligence/AICopilotDrawer';
+import { GeoRadarStudio } from './components/GeoRadar/GeoRadarStudio';
+import { TamperAuditStudio } from './components/EvidenceVault/TamperAuditStudio';
+import { MultiCaseStudio } from './components/CaseManager/MultiCaseStudio';
+import { CreateCaseModal } from './components/CaseManager/CreateCaseModal';
 import { PoliceReportView } from './components/PoliceReport/PoliceReportView';
 import { IngestModal } from './components/EvidenceVault/IngestModal';
 import { ChainOfCustodyModal } from './components/EvidenceVault/ChainOfCustodyModal';
@@ -16,10 +21,12 @@ import { ChainOfCustodyModal } from './components/EvidenceVault/ChainOfCustodyMo
 export function App() {
   const [cases, setCases] = useState<CrimeCase[]>(() => vaultStorage.loadCases());
   const [selectedCaseId, setSelectedCaseId] = useState<string>(() => vaultStorage.loadCases()[0]?.id || MOCK_CRIME_CASES[0].id);
-  const [activeTab, setActiveTab] = useState<'vault' | 'timeline' | 'graph' | 'ai' | 'report'>('vault');
+  const [activeTab, setActiveTab] = useState<ActiveTabType>('vault');
   const [piiRedacted, setPiiRedacted] = useState<boolean>(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
+  const [isCreateCaseModalOpen, setIsCreateCaseModalOpen] = useState<boolean>(false);
 
   const currentCase = cases.find(c => c.id === selectedCaseId) || cases[0];
 
@@ -73,6 +80,11 @@ export function App() {
     );
   };
 
+  const handleCreateNewCase = (newCase: CrimeCase) => {
+    setCases(prev => [newCase, ...prev]);
+    setSelectedCaseId(newCase.id);
+  };
+
   const handleDeleteExhibit = (exhibitId: string) => {
     setCases(prevCases =>
       prevCases.map(c => {
@@ -117,6 +129,7 @@ export function App() {
         onOpenAuditModal={() => setIsAuditModalOpen(true)}
         onExportVaultJSON={handleExportVaultJSON}
         onImportVaultJSON={handleImportVaultJSON}
+        onOpenCopilot={() => setIsCopilotOpen(true)}
       />
 
       {/* Case Telemetry Bar */}
@@ -157,6 +170,23 @@ export function App() {
               <AIPatternStudio currentCase={currentCase} allCases={cases} />
             )}
 
+            {activeTab === 'radar' && (
+              <GeoRadarStudio currentCase={currentCase} />
+            )}
+
+            {activeTab === 'tamper' && (
+              <TamperAuditStudio currentCase={currentCase} />
+            )}
+
+            {activeTab === 'cases' && (
+              <MultiCaseStudio
+                cases={cases}
+                selectedCaseId={selectedCaseId}
+                onSelectCase={setSelectedCaseId}
+                onOpenCreateCaseModal={() => setIsCreateCaseModalOpen(true)}
+              />
+            )}
+
             {activeTab === 'report' && (
               <PoliceReportView
                 currentCase={currentCase}
@@ -168,6 +198,14 @@ export function App() {
         </AnimatePresence>
       </main>
 
+      {/* AI Copilot Drawer */}
+      <AICopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        currentCase={currentCase}
+        onNavigateTab={setActiveTab}
+      />
+
       {/* Evidence Ingestion Modal */}
       <IngestModal
         isOpen={isUploadModalOpen}
@@ -175,6 +213,13 @@ export function App() {
         existingCount={currentCase.evidenceItems.length}
         caseId={currentCase.id}
         onAddEvidence={item => handleAddEvidenceItems([item])}
+      />
+
+      {/* Create Case Modal */}
+      <CreateCaseModal
+        isOpen={isCreateCaseModalOpen}
+        onClose={() => setIsCreateCaseModalOpen(false)}
+        onCreateCase={handleCreateNewCase}
       />
 
       {/* Chain of Custody Audit Modal */}
