@@ -18,6 +18,9 @@ import {
   Bot,
   Layers,
   Award,
+  Cpu,
+  Compass,
+  BarChart2,
 } from 'lucide-react';
 import { CrimeCase, ActiveTabType } from '../types';
 
@@ -83,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-4">
           <span className="flex items-center space-x-1 text-cyan-400 font-semibold tracking-wider">
             <Terminal className="w-3.5 h-3.5 animate-pulse" />
-            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v3.0</span>
+            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v5.0 FLAGSHIP</span>
           </span>
           <span className="hidden sm:inline-block text-slate-600">|</span>
           <button
@@ -98,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-3 text-slate-400">
           <span className="flex items-center space-x-1 bg-cyan-950/60 border border-cyan-800/50 px-2 py-0.5 rounded text-[11px] text-cyan-300">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping mr-1"></span>
-            FORENSIC ENGINE ONLINE
+            FLAGSHIP ENGINE ONLINE
           </span>
           <span>{new Date().toISOString().slice(0, 10)}</span>
         </div>
@@ -121,10 +124,10 @@ export const Header: React.FC<HeaderProps> = ({
               <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                 CRIME SCENE INVESTIGATOR
                 <span className="bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">
-                  DAY 4 SUITE
+                  DAY 5 FINAL
                 </span>
               </h1>
-              <p className="text-xs text-slate-400 font-mono">Digital Evidence Analysis & Forensic Engine</p>
+              <p className="text-xs text-slate-400 font-mono">Autonomous Forensics & Investigation Suite</p>
             </div>
           </div>
 
@@ -139,7 +142,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 {cases.map(c => (
                   <option key={c.id} value={c.id} className="bg-slate-900 text-slate-200 font-mono">
-                    [{c.caseNumber}] {c.title.slice(0, 28)}...
+                    [{c.caseNumber}] {c.title.slice(0, 26)}...
                   </option>
                 ))}
               </select>
@@ -223,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <FolderOpen className="w-3.5 h-3.5" />
-            <span>1. VAULT ({currentCase.evidenceItems.length})</span>
+            <span>VAULT ({currentCase.evidenceItems.length})</span>
           </button>
 
           <button
@@ -235,7 +238,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>2. TIMELINE</span>
+            <span>TIMELINE</span>
           </button>
 
           <button
@@ -247,7 +250,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Search className="w-3.5 h-3.5 text-indigo-400" />
-            <span>3. ENTITY GRAPH</span>
+            <span>ENTITY GRAPH</span>
           </button>
 
           <button
@@ -259,7 +262,43 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-            <span>4. AI SCAM STUDIO</span>
+            <span>AI SCAM STUDIO</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('agent')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'agent'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+            <span>AGENT SIMULATOR</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('osint')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'osint'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5 text-purple-400" />
+            <span>OSINT RECON</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('analytics')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'analytics'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>ANALYTICS HUB</span>
           </button>
 
           <button
@@ -271,7 +310,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Globe className="w-3.5 h-3.5 text-blue-400" />
-            <span>5. GEO IP RADAR</span>
+            <span>GEO IP RADAR</span>
           </button>
 
           <button
@@ -283,7 +322,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Award className="w-3.5 h-3.5 text-emerald-400" />
-            <span>6. TAMPER AUDIT</span>
+            <span>TAMPER AUDIT</span>
           </button>
 
           <button
@@ -295,7 +334,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Layers className="w-3.5 h-3.5 text-purple-400" />
-            <span>7. MULTI-CASE HUB</span>
+            <span>MULTI-CASE HUB</span>
           </button>
 
           <button
@@ -307,7 +346,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>8. POLICE REPORT</span>
+            <span>POLICE REPORT</span>
           </button>
         </div>
       </div>

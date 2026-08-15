@@ -10,6 +10,9 @@ import { MasterTimeline } from './components/Timeline/MasterTimeline';
 import { EntityGraph } from './components/GraphVisualizer/EntityGraph';
 import { AIPatternStudio } from './components/AIIntelligence/AIPatternStudio';
 import { AICopilotDrawer } from './components/AIIntelligence/AICopilotDrawer';
+import { AIAgentSimulatorStudio } from './components/AIAgent/AIAgentSimulatorStudio';
+import { OSINTIntelligenceStudio } from './components/OSINT/OSINTIntelligenceStudio';
+import { AnalyticsCommandCenter } from './components/Analytics/AnalyticsCommandCenter';
 import { GeoRadarStudio } from './components/GeoRadar/GeoRadarStudio';
 import { TamperAuditStudio } from './components/EvidenceVault/TamperAuditStudio';
 import { MultiCaseStudio } from './components/CaseManager/MultiCaseStudio';
@@ -168,6 +171,27 @@ export function App() {
 
             {activeTab === 'ai' && (
               <AIPatternStudio currentCase={currentCase} allCases={cases} />
+            )}
+
+            {activeTab === 'agent' && (
+              <AIAgentSimulatorStudio
+                currentCase={currentCase}
+                onIngestDiscoveredExhibit={item => handleAddEvidenceItems([item])}
+              />
+            )}
+
+            {activeTab === 'osint' && (
+              <OSINTIntelligenceStudio
+                currentCase={currentCase}
+                onIngestOSINTExhibit={item => handleAddEvidenceItems([item])}
+              />
+            )}
+
+            {activeTab === 'analytics' && (
+              <AnalyticsCommandCenter
+                currentCase={currentCase}
+                allCases={cases}
+              />
             )}
 
             {activeTab === 'radar' && (
