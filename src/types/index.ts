@@ -1,6 +1,17 @@
 export type EvidenceType = 'chat' | 'email' | 'screenshot' | 'transaction' | 'audio';
 
-export type ActiveTabType = 'vault' | 'timeline' | 'graph' | 'ai' | 'radar' | 'tamper' | 'cases' | 'report';
+export type ActiveTabType =
+  | 'vault'
+  | 'timeline'
+  | 'graph'
+  | 'ai'
+  | 'agent'
+  | 'osint'
+  | 'analytics'
+  | 'radar'
+  | 'tamper'
+  | 'cases'
+  | 'report';
 
 export interface ExtractedEntities {
   phones: string[];
@@ -131,6 +142,26 @@ export interface CopilotMessage {
     type: 'NAVIGATE' | 'HIGHLIGHT_EXHIBIT' | 'GENERATE_SUBPOENA';
     target: string;
   };
+}
+
+export interface AgentPlaybookStep {
+  id: string;
+  name: string;
+  status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  logOutput: string;
+  discoveredEntities?: ExtractedEntities;
+}
+
+export interface OSINTTarget {
+  id: string;
+  domainOrHandle: string;
+  targetType: 'DOMAIN' | 'TELEGRAM_CHANNEL' | 'DARKWEB_FORUM';
+  registrarOrHost: string;
+  sslFingerprint: string;
+  creationDate: string;
+  privacyStatus: string;
+  associatedThreatActors: string[];
+  riskScore: number;
 }
 
 export interface CrimeCase {
