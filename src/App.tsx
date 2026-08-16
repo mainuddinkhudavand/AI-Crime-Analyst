@@ -13,6 +13,8 @@ import { AICopilotDrawer } from './components/AIIntelligence/AICopilotDrawer';
 import { AIAgentSimulatorStudio } from './components/AIAgent/AIAgentSimulatorStudio';
 import { OSINTIntelligenceStudio } from './components/OSINT/OSINTIntelligenceStudio';
 import { AnalyticsCommandCenter } from './components/Analytics/AnalyticsCommandCenter';
+import { TaskforceHub } from './components/Taskforce/TaskforceHub';
+import { CustomRulesEngine } from './components/Rules/CustomRulesEngine';
 import { GeoRadarStudio } from './components/GeoRadar/GeoRadarStudio';
 import { TamperAuditStudio } from './components/EvidenceVault/TamperAuditStudio';
 import { MultiCaseStudio } from './components/CaseManager/MultiCaseStudio';
@@ -192,6 +194,14 @@ export function App() {
                 currentCase={currentCase}
                 allCases={cases}
               />
+            )}
+
+            {activeTab === 'taskforce' && (
+              <TaskforceHub currentCase={currentCase} />
+            )}
+
+            {activeTab === 'rules' && (
+              <CustomRulesEngine currentCase={currentCase} />
             )}
 
             {activeTab === 'radar' && (

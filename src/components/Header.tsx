@@ -21,6 +21,8 @@ import {
   Cpu,
   Compass,
   BarChart2,
+  Building2,
+  Sliders,
 } from 'lucide-react';
 import { CrimeCase, ActiveTabType } from '../types';
 
@@ -86,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-4">
           <span className="flex items-center space-x-1 text-cyan-400 font-semibold tracking-wider">
             <Terminal className="w-3.5 h-3.5 animate-pulse" />
-            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v5.0 FLAGSHIP</span>
+            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v6.0 ENTERPRISE</span>
           </span>
           <span className="hidden sm:inline-block text-slate-600">|</span>
           <button
@@ -101,7 +103,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-3 text-slate-400">
           <span className="flex items-center space-x-1 bg-cyan-950/60 border border-cyan-800/50 px-2 py-0.5 rounded text-[11px] text-cyan-300">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping mr-1"></span>
-            FLAGSHIP ENGINE ONLINE
+            ENTERPRISE ENGINE ONLINE
           </span>
           <span>{new Date().toISOString().slice(0, 10)}</span>
         </div>
@@ -124,10 +126,10 @@ export const Header: React.FC<HeaderProps> = ({
               <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                 CRIME SCENE INVESTIGATOR
                 <span className="bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">
-                  DAY 5 FINAL
+                  DAY 6 ENTERPRISE
                 </span>
               </h1>
-              <p className="text-xs text-slate-400 font-mono">Autonomous Forensics & Investigation Suite</p>
+              <p className="text-xs text-slate-400 font-mono">Autonomous Forensics & Taskforce Platform</p>
             </div>
           </div>
 
@@ -299,6 +301,30 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>ANALYTICS HUB</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('taskforce')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'taskforce'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5 text-blue-400" />
+            <span>TASKFORCE</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('rules')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'rules'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5 text-amber-400" />
+            <span>RULES ENGINE</span>
           </button>
 
           <button
