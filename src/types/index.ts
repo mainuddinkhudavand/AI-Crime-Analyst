@@ -11,6 +11,8 @@ export type ActiveTabType =
   | 'radar'
   | 'tamper'
   | 'cases'
+  | 'taskforce'
+  | 'rules'
   | 'report';
 
 export interface ExtractedEntities {
@@ -142,6 +144,27 @@ export interface CopilotMessage {
     type: 'NAVIGATE' | 'HIGHLIGHT_EXHIBIT' | 'GENERATE_SUBPOENA';
     target: string;
   };
+}
+
+export interface TaskforceAgency {
+  id: string;
+  agencyName: string;
+  agencyAbbr: string;
+  jurisdiction: string;
+  contactOfficer: string;
+  clearanceLevel: 'LAW_ENFORCEMENT_SENSITIVE' | 'TOP_SECRET_CYBER' | 'UNCLASSIFIED';
+  activeDispatchesCount: number;
+  status: 'ONLINE' | 'STANDBY';
+}
+
+export interface CustomThreatRule {
+  id: string;
+  ruleName: string;
+  targetField: 'content' | 'amount' | 'email_header' | 'crypto_address';
+  conditionType: 'CONTAINS' | 'GREATER_THAN' | 'HEADER_FAIL';
+  triggerValue: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  isEnabled: boolean;
 }
 
 export interface AgentPlaybookStep {
