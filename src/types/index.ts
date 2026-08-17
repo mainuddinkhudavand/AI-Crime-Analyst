@@ -8,11 +8,14 @@ export type ActiveTabType =
   | 'agent'
   | 'osint'
   | 'analytics'
+  | 'taskforce'
+  | 'rules'
+  | 'prosecution'
+  | 'deepfake'
+  | 'threats'
   | 'radar'
   | 'tamper'
   | 'cases'
-  | 'taskforce'
-  | 'rules'
   | 'report';
 
 export interface ExtractedEntities {
@@ -165,6 +168,17 @@ export interface CustomThreatRule {
   triggerValue: string;
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
   isEnabled: boolean;
+}
+
+export interface GlobalThreatIncident {
+  id: string;
+  syndicateName: string;
+  threatCategory: string;
+  originCountry: string;
+  activeWalletOrHandle: string;
+  estimatedStolenCapitalUSD: number;
+  threatLevel: 'CRITICAL' | 'HIGH';
+  discoveredDate: string;
 }
 
 export interface AgentPlaybookStep {
