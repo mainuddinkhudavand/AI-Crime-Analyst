@@ -15,6 +15,9 @@ import { OSINTIntelligenceStudio } from './components/OSINT/OSINTIntelligenceStu
 import { AnalyticsCommandCenter } from './components/Analytics/AnalyticsCommandCenter';
 import { TaskforceHub } from './components/Taskforce/TaskforceHub';
 import { CustomRulesEngine } from './components/Rules/CustomRulesEngine';
+import { ProsecutionStudio } from './components/Prosecution/ProsecutionStudio';
+import { DeepfakeAuditStudio } from './components/DeepfakeAudit/DeepfakeAuditStudio';
+import { GlobalThreatFeed } from './components/ThreatFeed/GlobalThreatFeed';
 import { GeoRadarStudio } from './components/GeoRadar/GeoRadarStudio';
 import { TamperAuditStudio } from './components/EvidenceVault/TamperAuditStudio';
 import { MultiCaseStudio } from './components/CaseManager/MultiCaseStudio';
@@ -193,6 +196,21 @@ export function App() {
               <AnalyticsCommandCenter
                 currentCase={currentCase}
                 allCases={cases}
+              />
+            )}
+
+            {activeTab === 'prosecution' && (
+              <ProsecutionStudio currentCase={currentCase} />
+            )}
+
+            {activeTab === 'deepfake' && (
+              <DeepfakeAuditStudio currentCase={currentCase} />
+            )}
+
+            {activeTab === 'threats' && (
+              <GlobalThreatFeed
+                currentCase={currentCase}
+                onIngestThreatExhibit={item => handleAddEvidenceItems([item])}
               />
             )}
 
