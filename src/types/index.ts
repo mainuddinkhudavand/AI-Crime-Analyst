@@ -13,6 +13,9 @@ export type ActiveTabType =
   | 'prosecution'
   | 'deepfake'
   | 'threats'
+  | 'seizure'
+  | 'safety'
+  | 'reenactment'
   | 'radar'
   | 'tamper'
   | 'cases'
@@ -179,6 +182,25 @@ export interface GlobalThreatIncident {
   estimatedStolenCapitalUSD: number;
   threatLevel: 'CRITICAL' | 'HIGH';
   discoveredDate: string;
+}
+
+export interface AssetSeizureNode {
+  id: string;
+  assetType: 'CRYPTO_WALLET' | 'FIAT_BANK' | 'OFFSHORE_SHELL';
+  identifier: string;
+  institution: string;
+  amountUSD: number;
+  freezeStatus: 'FROZEN' | 'PENDING_WARRANT' | 'IN_TRANSIT';
+  recoveryProbability: number;
+}
+
+export interface VictimSafetyCheckItem {
+  id: string;
+  category: 'CREDIT_FREEZE' | 'TOKEN_REVOCATION' | 'SIM_PROTECTION' | 'IC3_FILING';
+  title: string;
+  description: string;
+  isCompleted: boolean;
+  priority: 'URGENT' | 'HIGH' | 'RECOMMENDED';
 }
 
 export interface AgentPlaybookStep {
