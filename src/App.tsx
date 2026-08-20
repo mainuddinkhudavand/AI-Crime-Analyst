@@ -21,6 +21,8 @@ import { GlobalThreatFeed } from './components/ThreatFeed/GlobalThreatFeed';
 import { AssetSeizureStudio } from './components/AssetSeizure/AssetSeizureStudio';
 import { VictimSafetyCenter } from './components/VictimSafety/VictimSafetyCenter';
 import { IncidentReenactmentStudio } from './components/Reenactment/IncidentReenactmentStudio';
+import { WarrantStudio } from './components/Warrant/WarrantStudio';
+import { RedactionStudio } from './components/Redaction/RedactionStudio';
 import { GeoRadarStudio } from './components/GeoRadar/GeoRadarStudio';
 import { TamperAuditStudio } from './components/EvidenceVault/TamperAuditStudio';
 import { MultiCaseStudio } from './components/CaseManager/MultiCaseStudio';
@@ -179,6 +181,14 @@ export function App() {
 
             {activeTab === 'ai' && (
               <AIPatternStudio currentCase={currentCase} allCases={cases} />
+            )}
+
+            {activeTab === 'warrants' && (
+              <WarrantStudio currentCase={currentCase} />
+            )}
+
+            {activeTab === 'redaction' && (
+              <RedactionStudio currentCase={currentCase} />
             )}
 
             {activeTab === 'agent' && (

@@ -29,6 +29,7 @@ import {
   Landmark,
   Clock,
   UserCheck,
+  FileText,
 } from 'lucide-react';
 import { CrimeCase, ActiveTabType } from '../types';
 
@@ -94,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-4">
           <span className="flex items-center space-x-1 text-cyan-400 font-semibold tracking-wider">
             <Terminal className="w-3.5 h-3.5 animate-pulse" />
-            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v8.0 NEXT-GEN</span>
+            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v9.0 OPERATIONS</span>
           </span>
           <span className="hidden sm:inline-block text-slate-600">|</span>
           <button
@@ -109,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-3 text-slate-400">
           <span className="flex items-center space-x-1 bg-cyan-950/60 border border-cyan-800/50 px-2 py-0.5 rounded text-[11px] text-cyan-300">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping mr-1"></span>
-            NEXT-GEN PLATFORM ONLINE
+            OPERATIONS SUITE ONLINE
           </span>
           <span>{new Date().toISOString().slice(0, 10)}</span>
         </div>
@@ -132,10 +133,10 @@ export const Header: React.FC<HeaderProps> = ({
               <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                 CRIME SCENE INVESTIGATOR
                 <span className="bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">
-                  DAY 8 NEXT-GEN
+                  DAY 9 OPERATIONS
                 </span>
               </h1>
-              <p className="text-xs text-slate-400 font-mono">Autonomous Forensics & Asset Recovery Suite</p>
+              <p className="text-xs text-slate-400 font-mono">Autonomous Forensics & Legal Warrant Suite</p>
             </div>
           </div>
 
@@ -271,6 +272,30 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
             <span>AI SCAM STUDIO</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('warrants')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'warrants'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <span>LEGAL WARRANTS</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('redaction')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'redaction'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <EyeOff className="w-3.5 h-3.5 text-amber-400" />
+            <span>PII REDACTION</span>
           </button>
 
           <button
