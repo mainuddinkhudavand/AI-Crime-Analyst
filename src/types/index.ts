@@ -16,6 +16,8 @@ export type ActiveTabType =
   | 'seizure'
   | 'safety'
   | 'reenactment'
+  | 'warrants'
+  | 'redaction'
   | 'radar'
   | 'tamper'
   | 'cases'
@@ -171,6 +173,23 @@ export interface CustomThreatRule {
   triggerValue: string;
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
   isEnabled: boolean;
+}
+
+export interface LegalWarrantTemplate {
+  id: string;
+  providerName: string;
+  statutoryAuthority: string;
+  requiredTarget: string;
+  scope: string;
+  jurisdictionCourt: string;
+}
+
+export interface PIIRedactionRule {
+  id: string;
+  piiType: 'SSN' | 'CREDIT_CARD' | 'ADDRESS' | 'PHONE' | 'EMAIL';
+  patternName: string;
+  matchesCount: number;
+  isRedacted: boolean;
 }
 
 export interface GlobalThreatIncident {
