@@ -18,6 +18,9 @@ export type ActiveTabType =
   | 'reenactment'
   | 'warrants'
   | 'redaction'
+  | 'mlat'
+  | 'defiaudit'
+  | 'command'
   | 'radar'
   | 'tamper'
   | 'cases'
@@ -190,6 +193,24 @@ export interface PIIRedactionRule {
   patternName: string;
   matchesCount: number;
   isRedacted: boolean;
+}
+
+export interface MLATRequestTemplate {
+  id: string;
+  targetCountry: string;
+  treatyName: string;
+  diplomaticChannel: string;
+  extraditionStatus: string;
+}
+
+export interface SmartContractAuditResult {
+  id: string;
+  contractAddress: string;
+  blockchain: string;
+  contractName: string;
+  vulnerabilityType: string;
+  riskScore: number;
+  isLiquidityDrained: boolean;
 }
 
 export interface GlobalThreatIncident {
