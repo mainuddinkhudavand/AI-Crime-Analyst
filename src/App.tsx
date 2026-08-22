@@ -23,6 +23,9 @@ import { VictimSafetyCenter } from './components/VictimSafety/VictimSafetyCenter
 import { IncidentReenactmentStudio } from './components/Reenactment/IncidentReenactmentStudio';
 import { WarrantStudio } from './components/Warrant/WarrantStudio';
 import { RedactionStudio } from './components/Redaction/RedactionStudio';
+import { MLATStudio } from './components/MLAT/MLATStudio';
+import { SmartContractAuditStudio } from './components/DeFiAudit/SmartContractAuditStudio';
+import { MasterCommandDashboard } from './components/Command/MasterCommandDashboard';
 import { GeoRadarStudio } from './components/GeoRadar/GeoRadarStudio';
 import { TamperAuditStudio } from './components/EvidenceVault/TamperAuditStudio';
 import { MultiCaseStudio } from './components/CaseManager/MultiCaseStudio';
@@ -181,6 +184,21 @@ export function App() {
 
             {activeTab === 'ai' && (
               <AIPatternStudio currentCase={currentCase} allCases={cases} />
+            )}
+
+            {activeTab === 'command' && (
+              <MasterCommandDashboard
+                currentCase={currentCase}
+                allCases={cases}
+              />
+            )}
+
+            {activeTab === 'mlat' && (
+              <MLATStudio currentCase={currentCase} />
+            )}
+
+            {activeTab === 'defiaudit' && (
+              <SmartContractAuditStudio currentCase={currentCase} />
             )}
 
             {activeTab === 'warrants' && (

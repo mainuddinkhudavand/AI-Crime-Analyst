@@ -30,6 +30,9 @@ import {
   Clock,
   UserCheck,
   FileText,
+  Flag,
+  Code,
+  Activity,
 } from 'lucide-react';
 import { CrimeCase, ActiveTabType } from '../types';
 
@@ -95,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-4">
           <span className="flex items-center space-x-1 text-cyan-400 font-semibold tracking-wider">
             <Terminal className="w-3.5 h-3.5 animate-pulse" />
-            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v9.0 OPERATIONS</span>
+            <span>AI DIGITAL CRIME SCENE INVESTIGATOR v10.0 MASTER COMMAND</span>
           </span>
           <span className="hidden sm:inline-block text-slate-600">|</span>
           <button
@@ -110,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-3 text-slate-400">
           <span className="flex items-center space-x-1 bg-cyan-950/60 border border-cyan-800/50 px-2 py-0.5 rounded text-[11px] text-cyan-300">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping mr-1"></span>
-            OPERATIONS SUITE ONLINE
+            MASTER COMMAND ONLINE
           </span>
           <span>{new Date().toISOString().slice(0, 10)}</span>
         </div>
@@ -133,10 +136,10 @@ export const Header: React.FC<HeaderProps> = ({
               <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                 CRIME SCENE INVESTIGATOR
                 <span className="bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] px-1.5 py-0.5 rounded font-mono font-medium">
-                  DAY 9 OPERATIONS
+                  DAY 10 MASTER
                 </span>
               </h1>
-              <p className="text-xs text-slate-400 font-mono">Autonomous Forensics & Legal Warrant Suite</p>
+              <p className="text-xs text-slate-400 font-mono">Autonomous Forensics & MLAT Extradition Suite</p>
             </div>
           </div>
 
@@ -272,6 +275,42 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
             <span>AI SCAM STUDIO</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('command')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'command'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+            <span>MASTER COMMAND</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('mlat')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'mlat'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Flag className="w-3.5 h-3.5 text-blue-400" />
+            <span>MLAT EXTRADITION</span>
+          </button>
+
+          <button
+            onClick={() => onSelectTab('defiaudit')}
+            className={`px-3 py-2.5 border-b-2 font-medium flex items-center space-x-1.5 transition-all whitespace-nowrap ${
+              activeTab === 'defiaudit'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Code className="w-3.5 h-3.5 text-cyan-400" />
+            <span>DEFI AUDIT</span>
           </button>
 
           <button
